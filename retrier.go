@@ -53,7 +53,7 @@ func NewConstantBackoff(base time.Duration) Config {
 	}
 }
 
-// DoWithData will retry the RetryableFuncWithData in accordance with the given *Config.
+// DoWithData will retry the RetryableFuncWithData in accordance with the given Config.
 func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
 	defer cancel()
@@ -87,7 +87,7 @@ func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 	return emptyT, errors.Join(lastErr, errMaxAttempts)
 }
 
-// Do will retry the RetryableFunc in accordance with the given *Config.
+// Do will retry the RetryableFunc in accordance with the given Config.
 func Do(f RetryableFunc, cfg Config) error {
 	_, err := DoWithData(func() (any, error) {
 		return nil, f()
