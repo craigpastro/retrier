@@ -49,6 +49,29 @@ func TestZeroTimeoutWillTryOnce(t *testing.T) {
 	}
 }
 
+func TestTimeout(t *testing.T) {
+	cfg := NewConstantBackoff(time.Second)
+	cfg.Timeout = 10 * time.Millisecond
+
+	now := time.Now()
+
+	var i int
+	err := Do(func() error {
+		i += 1
+		return errTest
+	}, cfg)
+
+	if !errors.Is(err, errTimeoutExceeded) {
+		t.Error(err)
+	}
+
+	since := time.Since(now)
+
+	if since > 15*time.Millisecond {
+		t.Error("timeout took too long", since)
+	}
+}
+
 func TestConstantBackoffAndMaxAttempts(t *testing.T) {
 	cfg := NewConstantBackoff(time.Millisecond)
 	cfg.Attempts = 10
