@@ -24,7 +24,3 @@ jobs:
         with:
           go-version-file: "./go.mod"
       - run: make test
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
