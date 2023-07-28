@@ -62,6 +62,7 @@ func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 		cfg.Attempts = DefaultAttempts
 	}
 
+	done := make(chan struct{})
 	var emptyT T
 	var lastErr error
 	for i := 0; i < cfg.Attempts; i++ {
@@ -72,16 +73,22 @@ func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 
 		lastErr = err
 
-		if ctx.Err() != nil {
-			return emptyT, errors.Join(lastErr, errTimeoutExceeded)
-		}
+		go func() {
+			sleep := cfg.Base.Milliseconds() * pow(cfg.Multiplier, i)
+			if cfg.Jitter {
+				sleep = rand.Int63n(sleep) + 1
+			}
 
-		sleep := cfg.Base.Milliseconds() * pow(cfg.Multiplier, i)
-		if cfg.Jitter {
-			sleep = rand.Int63n(sleep) + 1
-		}
+			time.Sleep(time.Duration(sleep) * time.Millisecond)
+			done <- struct{}{}
+		}()
 
-		time.Sleep(time.Duration(sleep) * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			return emptyT, errors.Join(lastErr, errTimeoutExceeded, ctx.Err())
+		case <-done:
+			continue
+		}
 	}
 
 	return emptyT, errors.Join(lastErr, errMaxAttempts)
