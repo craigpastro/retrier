@@ -12,7 +12,7 @@ const DefaultAttempts = 100
 
 var (
 	errTimeoutExceeded = errors.New("timeout exceeded")
-	errMaxAttempts     = errors.New("max attempts")
+	errMaxAttempts     = errors.New("max attempts reached")
 )
 
 type RetryableFunc func() error
