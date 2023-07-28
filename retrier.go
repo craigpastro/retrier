@@ -29,13 +29,13 @@ type Config struct {
 	Jitter bool
 }
 
-// Default is exponential backoff with jitter and timeout of one minute.
-func Default() Config {
-	return ExponentialBackoff()
+// NewDefault is exponential backoff with jitter and timeout of one minute.
+func NewDefault() Config {
+	return NewExponentialBackoff()
 }
 
-// ExponentialBackoff with jitter and timeout of one minute.
-func ExponentialBackoff() Config {
+// NewExponentialBackoff with jitter and timeout of one minute.
+func NewExponentialBackoff() Config {
 	return Config{
 		Base:       time.Second,
 		Multiplier: 2,
@@ -44,8 +44,8 @@ func ExponentialBackoff() Config {
 	}
 }
 
-// ConstantBackoff with user defined base duration and timeout of one minute.
-func ConstantBackoff(base time.Duration) Config {
+// NewConstantBackoff with user defined base duration and timeout of one minute.
+func NewConstantBackoff(base time.Duration) Config {
 	return Config{
 		Base:       base,
 		Multiplier: 1,

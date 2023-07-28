@@ -9,7 +9,8 @@ import (
 var errTest = errors.New("error")
 
 func TestRetry(t *testing.T) {
-	cfg := Default()
+	cfg := NewDefault()
+	cfg.Base = time.Millisecond
 
 	var i int
 	attempts, err := DoWithData(func() (int, error) {
@@ -30,7 +31,7 @@ func TestRetry(t *testing.T) {
 }
 
 func TestZeroTimeoutWillTryOnce(t *testing.T) {
-	cfg := Default()
+	cfg := NewDefault()
 	cfg.Timeout = 0
 
 	var i int
@@ -49,7 +50,7 @@ func TestZeroTimeoutWillTryOnce(t *testing.T) {
 }
 
 func TestConstantBackoffAndMaxAttempts(t *testing.T) {
-	cfg := ConstantBackoff(time.Millisecond)
+	cfg := NewConstantBackoff(time.Millisecond)
 	cfg.Attempts = 10
 	leastDuration := 10 * time.Millisecond
 	mostDuration := 15 * time.Millisecond

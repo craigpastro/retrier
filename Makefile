@@ -7,4 +7,4 @@ lint:
 
 .PHONY: test
 test:
-	go test -race ./...
+	go test -race -coverprofile=coverage.out -covermode=atomic

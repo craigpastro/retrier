@@ -4,9 +4,36 @@ A simple, no dependency, Go (Golang) library for retries.
 
 ## Usage
 
-## Goals
+### Making an HTTP request
 
-Simple-to-use, low dependency, retry package.
+```go
+body, err := retrier.DoWithData(func() ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}, retrier.NewExponentialBackoff())
+```
+
+### Connecting to a DB
+
+```go
+err := retrier.Do(func() error {
+	if err = pool.Ping(context.Background()); err != nil {
+		return err
+	}
+	return nil
+}, retrier.NewExponentialBackOff())
+if err != nil {
+	return nil, fmt.Errorf("error connecting to db: %w", err)
+}
+```
 
 ## Contributions
 
