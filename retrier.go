@@ -11,8 +11,8 @@ import (
 const DefaultAttempts = 100
 
 var (
-	errTimeoutExceeded = errors.New("timeout exceeded")
-	errMaxAttempts     = errors.New("max attempts reached")
+	errTimeoutExceeded = errors.New("retrier: timeout exceeded")
+	errMaxAttempts     = errors.New("retrier: max attempts reached")
 )
 
 type RetryableFunc func() error
