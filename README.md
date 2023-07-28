@@ -10,9 +10,9 @@ Simple-to-use, low dependency, retry package.
 
 ## Contributions
 
-Contributions are welcome!
+Contributions are welcome! Please create an issue for significant changes.
 
-## Alternatives
+## Inspired By
 
 - https://github.com/avast/retry-go
 - https://github.com/cenkalti/backoff

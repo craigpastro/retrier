@@ -8,12 +8,15 @@ import (
 	"time"
 )
 
-const (
-	DefaultAttempts = 100
-	DefaultTimeout  = time.Minute
+const DefaultAttempts = 100
+
+var (
+	errTimeoutExceeded = errors.New("timeout exceeded")
+	errMaxAttempts     = errors.New("max attempts")
 )
 
 type RetryableFunc func() error
+type RetryableFuncWithData[T any] func() (T, error)
 
 type Config struct {
 	Base       time.Duration
@@ -26,7 +29,8 @@ type Config struct {
 	Jitter bool
 }
 
-func DefaultConfig() Config {
+// Default is exponential backoff with jitter and timeout of one minute.
+func Default() Config {
 	return ExponentialBackoff()
 }
 
@@ -49,8 +53,8 @@ func ConstantBackoff(base time.Duration) Config {
 	}
 }
 
-// Do will retry the RetryableFunc in accordance with the given *Config.
-func Do(f RetryableFunc, cfg Config) error {
+// DoWithData will retry the RetryableFuncWithData in accordance with the given *Config.
+func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
 	defer cancel()
 
@@ -58,17 +62,18 @@ func Do(f RetryableFunc, cfg Config) error {
 		cfg.Attempts = DefaultAttempts
 	}
 
+	var emptyT T
 	var lastErr error
 	for i := 0; i < cfg.Attempts; i++ {
-		err := f()
+		t, err := f()
 		if err == nil {
-			return nil
+			return t, nil
 		}
 
 		lastErr = err
 
 		if ctx.Err() != nil {
-			return errors.Join(lastErr, errors.New("timeout exceeded"))
+			return emptyT, errors.Join(lastErr, errTimeoutExceeded)
 		}
 
 		sleep := cfg.Base.Milliseconds() * pow(cfg.Multiplier, i)
@@ -79,7 +84,16 @@ func Do(f RetryableFunc, cfg Config) error {
 		time.Sleep(time.Duration(sleep) * time.Millisecond)
 	}
 
-	return errors.Join(lastErr, errors.New("max attempts reached"))
+	return emptyT, errors.Join(lastErr, errMaxAttempts)
+}
+
+// Do will retry the RetryableFunc in accordance with the given *Config.
+func Do(f RetryableFunc, cfg Config) error {
+	_, err := DoWithData(func() (any, error) {
+		return nil, f()
+	}, cfg)
+
+	return err
 }
 
 func pow(x, y int) int64 {

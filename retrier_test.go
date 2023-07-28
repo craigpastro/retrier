@@ -9,15 +9,15 @@ import (
 var errTest = errors.New("error")
 
 func TestRetry(t *testing.T) {
-	cfg := DefaultConfig()
+	cfg := Default()
 
-	var attempts int
-	err := Do(func() error {
-		attempts += 1
-		if attempts == 3 {
-			return nil
+	var i int
+	attempts, err := DoWithData(func() (int, error) {
+		i += 1
+		if i == 3 {
+			return i, nil
 		}
-		return errTest
+		return 0, errTest
 	}, cfg)
 
 	if err != nil {
@@ -30,26 +30,25 @@ func TestRetry(t *testing.T) {
 }
 
 func TestZeroTimeoutWillTryOnce(t *testing.T) {
-	cfg := DefaultConfig()
+	cfg := Default()
 	cfg.Timeout = 0
 
-	var attempts int
+	var i int
 	err := Do(func() error {
-		attempts += 1
+		i += 1
 		return errTest
-
 	}, cfg)
 
-	if !errors.Is(err, errTest) {
+	if !errors.Is(err, errTimeoutExceeded) {
 		t.Error(err)
 	}
 
-	if attempts != 1 {
-		t.Error("number of attempts is incorrect:", attempts)
+	if i != 1 {
+		t.Error("number of attempts is incorrect:", i)
 	}
 }
 
-func TestConstantBackoff(t *testing.T) {
+func TestConstantBackoffAndMaxAttempts(t *testing.T) {
 	cfg := ConstantBackoff(time.Millisecond)
 	cfg.Attempts = 10
 	leastDuration := 10 * time.Millisecond
@@ -62,7 +61,7 @@ func TestConstantBackoff(t *testing.T) {
 		return errTest
 	}, cfg)
 
-	if !errors.Is(err, errTest) {
+	if !errors.Is(err, errMaxAttempts) && !errors.Is(err, errTest) {
 		t.Error(err)
 	}
 
@@ -81,7 +80,7 @@ func TestConstantBackoff(t *testing.T) {
 	}
 }
 
-func TestExponentialBackoff(t *testing.T) {
+func TestExponentialBackoffAndMaxAttempts(t *testing.T) {
 	cfg := Config{
 		Base:       time.Millisecond,
 		Multiplier: 2,
@@ -98,7 +97,7 @@ func TestExponentialBackoff(t *testing.T) {
 		return errTest
 	}, cfg)
 
-	if !errors.Is(err, errTest) {
+	if !errors.Is(err, errMaxAttempts) && !errors.Is(err, errTest) {
 		t.Error(err)
 	}
 
