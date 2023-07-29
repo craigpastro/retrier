@@ -5,7 +5,10 @@
 [![CI](https://github.com/craigpastro/retrier/actions/workflows/ci.yaml/badge.svg)](https://github.com/craigpastro/retrier/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/github/craigpastro/retrier/branch/main/graph/badge.svg?token=00AJODX77Z)](https://codecov.io/github/craigpastro/retrier)
 
-A simple, no dependency, Go (Golang) library for retries.
+A simple Go (Golang) library for retries.
+
+See the [godoc](https://pkg.go.dev/github.com/craigpastro/retrier) for more
+information.
 
 ## Usage
 
