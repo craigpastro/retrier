@@ -9,7 +9,7 @@ import (
 var errTest = errors.New("error")
 
 func TestRetry(t *testing.T) {
-	cfg := NewDefault()
+	cfg := NewExponentialBackoff()
 	cfg.Base = time.Millisecond
 
 	var i int
@@ -26,17 +26,17 @@ func TestRetry(t *testing.T) {
 	}
 
 	if attempts != 3 {
-		t.Error("number of attempts is incorrect:", attempts)
+		t.Error("expected 3 attempts, got:", attempts)
 	}
 }
 
 func TestZeroTimeoutWillTryOnce(t *testing.T) {
-	cfg := NewDefault()
+	cfg := NewExponentialBackoff()
 	cfg.Timeout = 0
 
-	var i int
+	var attempts int
 	err := Do(func() error {
-		i += 1
+		attempts += 1
 		return errTest
 	}, cfg)
 
@@ -44,8 +44,8 @@ func TestZeroTimeoutWillTryOnce(t *testing.T) {
 		t.Error(err)
 	}
 
-	if i != 1 {
-		t.Error("number of attempts is incorrect:", i)
+	if attempts != 1 {
+		t.Error("expected 1 attempt, got:", attempts)
 	}
 }
 
@@ -55,14 +55,18 @@ func TestTimeout(t *testing.T) {
 
 	now := time.Now()
 
-	var i int
+	var attempts int
 	err := Do(func() error {
-		i += 1
+		attempts += 1
 		return errTest
 	}, cfg)
 
 	if !errors.Is(err, errTimeoutExceeded) {
 		t.Error(err)
+	}
+
+	if attempts != 1 {
+		t.Error("expected 1 attempt, got:", attempts)
 	}
 
 	since := time.Since(now)
@@ -90,7 +94,7 @@ func TestConstantBackoffAndMaxAttempts(t *testing.T) {
 	}
 
 	if attempts != 10 {
-		t.Error("number of attempts is incorrect:", attempts)
+		t.Error("expected 10 attempts, got:", attempts)
 	}
 
 	since := time.Since(now)
@@ -109,7 +113,8 @@ func TestExponentialBackoffAndMaxAttempts(t *testing.T) {
 		Base:       time.Millisecond,
 		Multiplier: 2,
 		Timeout:    time.Minute,
-		Attempts:   4, // should take about 15ms
+		Attempts:   4, // should take about 15ms if no jitter
+		Jitter:     false,
 	}
 	leastDuration := 15 * time.Millisecond
 	mostDuration := 20 * time.Millisecond
@@ -126,7 +131,7 @@ func TestExponentialBackoffAndMaxAttempts(t *testing.T) {
 	}
 
 	if attempts != 4 {
-		t.Error("number of attempts is incorrect:", attempts)
+		t.Error("expected 4 attempts, got:", attempts)
 	}
 
 	since := time.Since(now)

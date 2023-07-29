@@ -29,11 +29,6 @@ type Config struct {
 	Jitter bool
 }
 
-// NewDefault is exponential backoff with jitter and timeout of one minute.
-func NewDefault() Config {
-	return NewExponentialBackoff()
-}
-
 // NewExponentialBackoff with jitter and timeout of one minute.
 func NewExponentialBackoff() Config {
 	return Config{
@@ -53,7 +48,7 @@ func NewConstantBackoff(base time.Duration) Config {
 	}
 }
 
-// DoWithData will retry the RetryableFuncWithData in accordance with the given Config.
+// DoWithData will retry the RetryableFuncWithData according to the given Config.
 func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
 	defer cancel()
@@ -94,7 +89,7 @@ func DoWithData[T any](f RetryableFuncWithData[T], cfg Config) (T, error) {
 	return emptyT, errors.Join(lastErr, errMaxAttempts)
 }
 
-// Do will retry the RetryableFunc in accordance with the given Config.
+// Do will retry the RetryableFunc according to the given Config.
 func Do(f RetryableFunc, cfg Config) error {
 	_, err := DoWithData(func() (any, error) {
 		return nil, f()
