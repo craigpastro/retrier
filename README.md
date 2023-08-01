@@ -8,8 +8,7 @@
 A simple Go (Golang) library for retries with generics. Backoff is configurable
 but the most useful is probably exponential backoff with full jitter.
 
-See the [godoc](https://pkg.go.dev/github.com/craigpastro/retrier) for more
-information.
+For usage see the [godoc](https://pkg.go.dev/github.com/craigpastro/retrier).
 
 ## Usage
 
@@ -34,13 +33,14 @@ body, err := retrier.DoWithData(func() ([]byte, error) {
 
 ```go
 err := retrier.Do(func() error {
-	if err = pool.Ping(context.Background()); err != nil {
+	// db of type *sql.DB
+	if err = db.PingContext(context.Background()); err != nil {
 		return err
 	}
 	return nil
 }, retrier.NewExponentialBackOff())
 if err != nil {
-	return nil, fmt.Errorf("error connecting to db: %w", err)
+	return nil, fmt.Errorf("error pinging the db: %w", err)
 }
 ```
 
