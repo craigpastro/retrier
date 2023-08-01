@@ -5,8 +5,8 @@
 [![CI](https://github.com/craigpastro/retrier/actions/workflows/ci.yaml/badge.svg)](https://github.com/craigpastro/retrier/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/github/craigpastro/retrier/branch/main/graph/badge.svg?token=00AJODX77Z)](https://codecov.io/github/craigpastro/retrier)
 
-A simple Go (Golang) library for retries with generics. Backoff is configurable
-but the most useful is probably exponential backoff with full jitter.
+A simple Go (Golang) library for retries featuring generics. Backoff is
+configurable. The most useful is probably exponential backoff with full jitter.
 
 For usage see the [godoc](https://pkg.go.dev/github.com/craigpastro/retrier).
 
